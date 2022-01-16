@@ -1,5 +1,11 @@
 import path from "path";
-import express, { Application, Request, Response, NextFunction } from "express";
+import express, {
+	Application,
+	Request,
+	Response,
+	NextFunction,
+	application,
+} from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import config from "config";
@@ -12,6 +18,7 @@ import {
 	getRoomUsers,
 } from "./utils/users";
 import User from "../types/user";
+import logger from "./utils/logger";
 
 const port: number = config.get<number>("port");
 const host: string = config.get<string>("host");
@@ -80,7 +87,9 @@ io.on("connection", (socket: Socket) => {
 	});
 });
 
+app.get("/", (_, res) => res.send("Server is up!"));
+
 httpServer.listen(port, host, () => {
-	console.log(`🚀 Server version ${version} listening on port: ${port} 🚀`);
-	console.log(`http://${host}:${port}`);
+	logger.info(`🚀 Server version ${version} listening on port: ${port} 🚀`);
+	logger.info(`http://${host}:${port}`);
 });
