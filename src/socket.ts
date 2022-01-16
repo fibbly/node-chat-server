@@ -21,6 +21,10 @@ function socket({ io }: { io: Server }) {
 
 	io.on(EVENTS.connection, (socket: Socket) => {
 		logger.info(`User connected: ${socket.id}`);
+
+		socket.on(EVENTS.CLIENT.CREATE_ROOM, ({ roomName }) => {
+			console.log(roomName);
+		});
 	});
 
 	// const botName = "Chat Bot";
