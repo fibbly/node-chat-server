@@ -1,9 +1,9 @@
 import ServerConfig from "../types/config";
 
 const ServerConfig: ServerConfig = {
-	corsOrigin: "http://localhost:3000",
-	port: 3000,
-	host: "localhost",
+	corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8080",
+	port: process.env.PORT || 8080,
+	host: process.env.HOST || "localhost",
 };
 
 export default ServerConfig;

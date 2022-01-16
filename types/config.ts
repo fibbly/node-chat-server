@@ -1,5 +1,5 @@
 export default interface ServerConfig {
 	corsOrigin: string;
-	port: number;
+	port: number | string;
 	host: string;
 }
