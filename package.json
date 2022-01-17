@@ -25,6 +25,7 @@
     "debug": "^4.3.3",
     "express": "^4.17.2",
     "moment": "^2.29.1",
+    "nanoid": "^3.2.0",
     "pino": "^7.6.3",
     "pino-pretty": "^7.3.0",
     "socket.io": "^4.4.1",

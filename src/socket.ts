@@ -1,20 +1,24 @@
 import { Server, Socket } from "socket.io";
 import logger from "./utils/logger";
-import {
-	userJoin,
-	getCurrentUser,
-	userLeaves,
-	getRoomUsers,
-} from "./utils/users";
-import User from "../types/user";
-import formatMessage from "./utils/messages";
+import { nanoid } from "nanoid";
+import Room from "../types/room";
+import moment from "moment";
 
 const EVENTS = {
 	connection: "connection",
 	CLIENT: {
 		CREATE_ROOM: "CREATE_ROOM",
+		SEND_MESSAGE: "SEND_MESSAGE",
+		JOIN_ROOM: "JOIN_ROOM",
+	},
+	SERVER: {
+		ROOMS: "ROOMS",
+		JOINED_ROOM: "JOINED_ROOM",
+		ROOM_MESSAGE: "ROOM_MESSAGE",
 	},
 };
+
+const rooms: Record<string, Room> = {};
 
 function socket({ io }: { io: Server }) {
 	logger.info("Sockets enabled");
@@ -22,8 +26,44 @@ function socket({ io }: { io: Server }) {
 	io.on(EVENTS.connection, (socket: Socket) => {
 		logger.info(`User connected: ${socket.id}`);
 
+		socket.emit(EVENTS.SERVER.ROOMS, rooms);
+
+		/**
+		 * User Creates New Chat Room
+		 */
 		socket.on(EVENTS.CLIENT.CREATE_ROOM, ({ roomName }) => {
-			console.log(roomName);
+			console.log({ roomName });
+			// create a new chat room
+			const roomId = nanoid();
+			rooms[roomId] = {
+				roomName: roomName,
+			};
+			socket.join(roomId);
+			// broadcast an event to notify a new room has been created
+			socket.broadcast.emit(EVENTS.SERVER.ROOMS, rooms);
+			// emit event back to the room creator with a list of all chat rooms
+			socket.emit(EVENTS.SERVER.ROOMS, rooms);
+			// emit event back to the room creator to notify chat room joined
+			socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
+		});
+
+		/**
+		 * User Sends Message to Chat Room
+		 */
+		socket.on(EVENTS.CLIENT.SEND_MESSAGE, ({ roomId, message, username }) => {
+			socket.to(roomId).emit(EVENTS.SERVER.ROOM_MESSAGE, {
+				message,
+				username,
+				time: moment().format("h:mm a"),
+			});
+		});
+
+		/**
+		 * User Joins a Chat Room
+		 */
+		socket.on(EVENTS.CLIENT.JOIN_ROOM, (roomId) => {
+			socket.join(roomId);
+			socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
 		});
 	});
 
